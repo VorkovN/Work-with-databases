@@ -15,6 +15,11 @@ public class ExecuteScriptCommand implements Command {
     String arg = null;
     Route newRoute = null;
 
+    CommandExecutor commandExecutor;
+    public ExecuteScriptCommand(CommandExecutor commandExecutor) {
+        this.commandExecutor = commandExecutor;
+    }
+
     private ArrayList<String> scripts = new ArrayList<String>();
 
     public MessageToServer execute() {
@@ -32,7 +37,7 @@ public class ExecuteScriptCommand implements Command {
                     if (line.split(" ")[0].equals("execute_script")) {
                         scripts.add(line);
                     }
-                    CommandExecutor.getCommandExecutor().execute(line);
+                    commandExecutor.execute(line);
                 } else {
                     System.out.println("script " + line + " has already done");
                 }

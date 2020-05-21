@@ -11,8 +11,13 @@ public class HistoryCommand implements Command {
     String arg = null;
     Route newRoute = null;
 
+    CommandExecutor commandExecutor;
+    public HistoryCommand(CommandExecutor commandExecutor) {
+        this.commandExecutor = commandExecutor;
+    }
+
     public MessageToServer execute(){
-        CommandExecutor.getCommandExecutor().history.forEach(System.out::println);//redone
+        commandExecutor.history.forEach(System.out::println);
         return null;
     }
 

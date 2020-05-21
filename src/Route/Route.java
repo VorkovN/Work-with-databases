@@ -11,6 +11,7 @@ public class Route implements Serializable {
     private Location1 from = new Location1(); //Поле не может быть null
     private Location2 to = new Location2(); //Поле может быть null
     private Float distance; //Значение поля должно быть больше 1
+    private String user = null;
 
     public Integer getId() {
         return id;
@@ -72,6 +73,8 @@ public class Route implements Serializable {
         return to;
     }
 
+    public String getUser() { return user; }
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -88,9 +91,7 @@ public class Route implements Serializable {
         coordinates.setY(y);
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+    public void setDate(String date) { this.date = date; }
 
     public void setXl1(Long xl1) {
         from.setXl1(xl1);
@@ -119,6 +120,8 @@ public class Route implements Serializable {
     public void setDistance(float distance) {
         this.distance = distance;
     }
+
+    public void setUser(String user) { this.user = user; }
 
     @Override
     public String toString() {

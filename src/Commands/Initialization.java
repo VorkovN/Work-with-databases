@@ -1,5 +1,6 @@
 package Commands;
 
+import Client.User;
 import Exceptions.UnacceptableNumberException;
 import Route.Route;
 
@@ -7,7 +8,7 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Initialization {
-    public Route initialization() {
+    public Route initialization(User user) {
         Route newRoute = new Route();
         Scanner sc = new Scanner(System.in);
 
@@ -22,6 +23,7 @@ public class Initialization {
         yl2(newRoute, sc);
         namel2(newRoute, sc);
         distance(newRoute, sc);
+        user(newRoute, sc, user);
         return newRoute;
     }
 
@@ -174,5 +176,10 @@ public class Initialization {
             System.out.println("Wrong input");
             distance(newRoute, sc);
         }
+    }
+
+    public void user(Route newRoute, Scanner sc, User user) {
+        System.out.println("User = " + user.getName());
+        newRoute.setUser(user.getName());
     }
 }

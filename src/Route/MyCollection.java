@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 public class MyCollection implements Serializable {
 
     private List<Route> arr = new ArrayList<Route>();
-    private List<Route> arrBase = new ArrayList<Route>();
 
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
     private static final String USER = "s284775";
@@ -47,6 +46,7 @@ public class MyCollection implements Serializable {
                 newRoute.setYl2(resultSet.getFloat("yl2"));
                 newRoute.setNamel2(resultSet.getString("namel2"));
                 newRoute.setDistance(resultSet.getFloat("distance"));
+                newRoute.setUser(resultSet.getString("client"));
                 arr.add(newRoute);
             }
 
@@ -88,7 +88,7 @@ public class MyCollection implements Serializable {
     }
 
     public String add(Route newRoute) {
-        newRoute.setId(arr.size());
+        newRoute.setId(arr.size()+1);
         arr.add(newRoute);
         return "Your values saved";
     }
@@ -123,7 +123,7 @@ public class MyCollection implements Serializable {
 
         System.out.println("PostgreSQL JDBC Driver successfully connected");
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO routes (name, x, y, date, xl1, yl1, zl1, xl2, yl2, namel2, distance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))
+             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO routes (name, x, y, date, xl1, yl1, zl1, xl2, yl2, namel2, distance, client) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))
         {
             for (Route route : arr) {
                 preparedStatement.setString(1, route.getName());
@@ -137,6 +137,7 @@ public class MyCollection implements Serializable {
                 preparedStatement.setFloat(9, route.getYl2());
                 preparedStatement.setString(10, route.getNamel2());
                 preparedStatement.setFloat(11, route.getDistance());
+                preparedStatement.setString(12, route.getUser());
                 int rows = preparedStatement.executeUpdate();
                 System.out.println(rows);
                 }
@@ -144,33 +145,6 @@ public class MyCollection implements Serializable {
             throwables.printStackTrace();
         }
 
-
-        /*try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("output.json"))) {
-            for (Route route : arr) {
-                JSONObject out = new JSONObject();
-                out.put("id", route.getId());
-                out.put("name", route.getName());
-                JSONObject coordinates = new JSONObject();
-                coordinates.put("x", route.getX());
-                coordinates.put("y", route.getY());
-                out.put("Route.Coordinates", coordinates);
-                JSONObject location1 = new JSONObject();
-                location1.put("xl1", route.getXl1());
-                location1.put("yl1", route.getYl1());
-                location1.put("zl1", route.getZl1());
-                out.put("Route.Location1", location1);
-                JSONObject location2 = new JSONObject();
-                location2.put("xl2", route.getXl2());
-                location2.put("yl2", route.getYl2());
-                location2.put("namel2", route.getNamel2());
-                out.put("Route.Location2", location2);
-                out.put("distance", route.getDistance());
-                bufferedWriter.write(out.toJSONString());
-                bufferedWriter.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
         return "Saved";
     }
 

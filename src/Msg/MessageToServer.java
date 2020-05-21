@@ -12,4 +12,5 @@ public class MessageToServer implements Serializable {
     public void setStr(String str) {
         this.str = str;
     }
+
 }
