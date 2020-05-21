@@ -80,8 +80,9 @@ public class CommandExecutor {
                             command.setNewRoute(newRoute);
                         }
                         toServer.writeObject(command);
+                        toServer.writeObject(user);
                         System.out.println(((MessageToServer) fromServer.readObject()).getStr());
-
+                        user = (User) fromServer.readObject();
                     }
                 } else {
                     System.out.println("Commands.Command doesn't exist");
@@ -98,16 +99,29 @@ public class CommandExecutor {
                             command.execute();
                         } else {
                             if (command instanceof UpdateCommand) {
-                                Route newRoute = null;
-                                try {
-                                    newRoute = new Initialization().initialization(user);
-                                } catch (NumberFormatException e) {
-                                    System.out.println("\nWrong input, please enter your values again!");
+                                System.out.println(checkId(user, arg));
+                                if (checkId(user, arg)){
+                                    Route newRoute = null;
+                                    try {
+                                        newRoute = new Initialization().initialization(user);
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("\nWrong input, please enter your values again!");
+                                    }
+                                    command.setNewRoute(newRoute);
+                                    toServer.writeObject(command);
+                                    toServer.writeObject(user);
+                                    System.out.println(((MessageToServer) fromServer.readObject()).getStr());
+                                    user = (User) fromServer.readObject();
                                 }
-                                command.setNewRoute(newRoute);
+                                else{
+                                    System.out.println("This element isn't belongs to you");
+                                }
+                            }else{
+                                toServer.writeObject(command);
+                                toServer.writeObject(user);
+                                System.out.println(((MessageToServer) fromServer.readObject()).getStr());
+                                user = (User) fromServer.readObject();
                             }
-                            toServer.writeObject(command);
-                            System.out.println(((MessageToServer) fromServer.readObject()).getStr());
                         }
                     } else {
                         System.out.println("Commands.Command doesn't exist");
@@ -128,15 +142,27 @@ public class CommandExecutor {
         history.add(command);
     }
 
-    public boolean registrationAuthorization(User user){
+    public User registrationAuthorization(User user){
         try(Socket socket = new Socket(address, port);
             ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream())) {
             toServer.writeObject(user);
-            return ((User)fromServer.readObject()).getStatus();
+            user = (User)fromServer.readObject();
+            System.out.println(user.getIds());
         }
         catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
+        }
+        return user;
+    }
+
+    public boolean checkId(User user, String arg){
+        System.out.println(user.getIds());
+        int a = Integer.parseInt(arg);
+        for (int i: user.getIds()) {
+            if (i == a){
+                return true;
+            }
         }
         return false;
     }

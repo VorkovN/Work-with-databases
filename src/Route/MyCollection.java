@@ -1,5 +1,7 @@
 package Route;
 
+import Client.User;
+
 import java.io.Serializable;
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ public class MyCollection implements Serializable {
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
     private static final String USER = "s284775";
     private static final String PASS = "zrj839";
+    private User user;
+    private int countId;
 
     public MyCollection() {
         System.out.println("Testing connection to PostgreSQL JDBC");
@@ -34,12 +38,12 @@ public class MyCollection implements Serializable {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM routes");
             while (resultSet.next()){
                 Route newRoute = new Route();
-                newRoute.setId(resultSet.getInt("id"));
+                newRoute.setId(resultSet.getInt("id")-1);
                 newRoute.setName(resultSet.getString("name"));
                 newRoute.setX(resultSet.getFloat("x"));
                 newRoute.setY(resultSet.getDouble("y"));
                 newRoute.setDate(resultSet.getString("date"));
-                newRoute.setZl1(resultSet.getLong("xl1"));
+                newRoute.setXl1(resultSet.getLong("xl1"));
                 newRoute.setYl1(resultSet.getDouble("yl1"));
                 newRoute.setZl1(resultSet.getLong("zl1"));
                 newRoute.setXl2(resultSet.getInt("xl2"));
@@ -49,6 +53,7 @@ public class MyCollection implements Serializable {
                 newRoute.setUser(resultSet.getString("client"));
                 arr.add(newRoute);
             }
+            countId = arr.size();
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -88,31 +93,49 @@ public class MyCollection implements Serializable {
     }
 
     public String add(Route newRoute) {
-        newRoute.setId(arr.size()+1);
+        newRoute.setId(++countId);
         arr.add(newRoute);
+        user.addId(newRoute.getId());
         return "Your values saved";
     }
 
     public String update(Route newRoute,String arg) throws NumberFormatException{
         int id = Integer.parseInt(arg);
-            arr.set(id, newRoute);
+        for (int i = 0; i < arr.size(); ++i) {
+            if (arr.get(i).getId() == id){
+                arr.set(i, newRoute);
+            }
+        }
         return "Input your values";
     }
 
     public String removeById(String arg) throws NumberFormatException{
         int id = Integer.parseInt(arg);
-        arr = arr.stream().filter(route -> route.getId() != id).collect(Collectors.toList());
-        return "Element is removed";
+        //arr = arr.stream().filter(route -> route.getId() != id || !user.getName().equals(route.getUser())).collect(Collectors.toList());
+        for (int i = 0; i < arr.size(); ++i) {
+            if (arr.get(i).getId() == id){
+                if (user.getName().equals(arr.get(id).getUser())){
+                    arr.remove(i);
+                    user.removeId(id);
+                    return "Element is removed";
+                }
+                return "This element isn't belong to user";
+            }
+        }
+        return " No such element";
     }
 
     public String clear() {
-        arr.clear();
+        for (int i = arr.size(); i > 0; --i) {
+            if (user.getName().equals(arr.get(i).getUser())){
+                arr.remove(i);
+                user.removeId(arr.get(i).getId());
+            }
+        }
         return "List was cleared";
     }
 
     public String save() {
-
-        System.out.println("Testing connection to PostgreSQL JDBC");
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -120,8 +143,6 @@ public class MyCollection implements Serializable {
             System.out.println("PostgreSQL JDBC Driver is not found. Include it in your library path ");
             e.printStackTrace();
         }
-
-        System.out.println("PostgreSQL JDBC Driver successfully connected");
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
              PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO routes (name, x, y, date, xl1, yl1, zl1, xl2, yl2, namel2, distance, client) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))
         {
@@ -139,23 +160,31 @@ public class MyCollection implements Serializable {
                 preparedStatement.setFloat(11, route.getDistance());
                 preparedStatement.setString(12, route.getUser());
                 int rows = preparedStatement.executeUpdate();
-                System.out.println(rows);
                 }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-
         return "Saved";
     }
 
     public String removeFirst() throws NumberFormatException {
-        arr.remove(arr.stream().findFirst().get().getId());
-        return "First element is removed";
+        if (!arr.get(0).getUser().equals(user.getName())){
+            user.removeId(arr.get(0).getId());
+            arr.remove(0);
+            return "First element is removed";
+        }
+        return "First element isn't belong to user";
     }
 
     public String removeGreater(String arg) throws NumberFormatException{
         int id = Integer.parseInt(arg);
         arr = arr.stream().filter(route -> route.getId() < id ).collect(Collectors.toList());
+        for (int i = arr.size()-1; i > -1; i--) {
+            if (arr.get(i).getId() > id && user.getName().equals(arr.get(i).getUser())) {
+                arr.remove(i);
+                user.removeId(arr.get(i).getId());
+            }
+        }
         return "Removed";
     }
 
@@ -163,6 +192,12 @@ public class MyCollection implements Serializable {
     public String removeAllByDistance(String arg) throws NumberFormatException {
         int distance = Integer.parseInt(arg);
         arr = arr.stream().filter(route -> route.getDistance() != distance).collect(Collectors.toList());
+        for (int i = arr.size()-1; i > -1; i--) {
+            if (arr.get(i).getDistance() == distance && user.getName().equals(arr.get(i).getUser())) {
+                arr.remove(i);
+                user.removeId(arr.get(i).getId());
+            }
+        }
         return "Removed";
     }
 
@@ -176,5 +211,20 @@ public class MyCollection implements Serializable {
         StringBuilder s = new StringBuilder();
         arr.stream().filter(route -> route.getDistance() > distance).forEach(route -> s.append(route.toString()).append("\n"));
         return s.toString();
+    }
+
+    public void getIds(User user){
+        for (Route route: arr) {
+            System.out.println(user.getName());
+            System.out.println(route.getUser() + ' ' + user.getName());
+            if (route.getUser().equals(user.getName())){
+                user.addId(route.getId());
+            }
+        }
+        System.out.println(user.getIds());
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

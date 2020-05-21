@@ -1,6 +1,7 @@
 package Client;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 public class User implements Serializable {
@@ -8,11 +9,12 @@ public class User implements Serializable {
     private final String password;
     private boolean status;
     private String action;
-    private Set<Integer> ids;
+    private Set<Integer> ids;;
 
     public User(String name, String password) {
         this.name = name;
         this.password = password;
+        ids = new HashSet<Integer>();
     }
 
     public String getName() {
@@ -42,4 +44,6 @@ public class User implements Serializable {
     public void addId(int id){ ids.add(id); }
 
     public void removeId(int id){ ids.remove(id); }
+
+    public Set<Integer> getIds() { return ids; }
 }

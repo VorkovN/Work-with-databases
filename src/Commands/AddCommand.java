@@ -12,7 +12,6 @@ public class AddCommand implements Command{
 
     public MessageToServer execute() {
         MessageToServer msg = new MessageToServer();
-        System.out.println(newRoute.getNamel2());
         msg.setStr(myCollection.add(newRoute));
         return msg;
     }

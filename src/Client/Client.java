@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class Client {
     CommandExecutor commandExecutor;
+    User user;
 
     public Client() {
         commandExecutor = new CommandExecutor();
@@ -63,10 +64,10 @@ public class Client {
             case "registration" :
                 String nameR = inputName();
                 String passwordR = inputPassword();
-                User userR = new User(nameR, passwordR);
-                userR.setAction("registration");
-                commandExecutor.setUser(userR);
-                if (commandExecutor.registrationAuthorization(userR)){
+                user = new User(nameR, passwordR);
+                user.setAction("registration");
+                commandExecutor.setUser(user);
+                if (commandExecutor.registrationAuthorization(user).getStatus()){
                     System.out.println("Successful registration");
                 }
                 else{
@@ -77,10 +78,12 @@ public class Client {
             case "sign in" :
                 String nameS = inputName();
                 String passwordS = inputPassword();
-                User userS = new User(nameS, passwordS);
-                userS.setAction("authorization");
-                commandExecutor.setUser(userS);
-                if (commandExecutor.registrationAuthorization(userS)){
+                user = new User(nameS, passwordS);
+                user.setAction("authorization");
+                commandExecutor.setUser(user);
+                user = commandExecutor.registrationAuthorization(user);
+                commandExecutor.setUser(user);
+                if (user.getStatus()){
                     System.out.println("Successful authorization");
                 }
                 else{
