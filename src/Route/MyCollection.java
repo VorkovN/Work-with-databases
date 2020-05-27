@@ -7,11 +7,17 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class MyCollection implements Serializable {
 
+    ExecutorService executor = Executors.newCachedThreadPool();
     private List<Route> arr = new ArrayList<Route>();
+    ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
     private static final String USER = "s284775";
@@ -34,7 +40,6 @@ public class MyCollection implements Serializable {
              Statement statement = connection.createStatement())
 
         {
-
             ResultSet resultSet = statement.executeQuery("SELECT * FROM routes");
             while (resultSet.next()){
                 Route newRoute = new Route();
@@ -81,62 +86,92 @@ public class MyCollection implements Serializable {
     }
 
     public String info() throws IndexOutOfBoundsException, NoSuchElementException {
-        return "type: Roue\n"
-                + "Дата инициализации: " + arr.get(arr.stream().findFirst().get().getId()).getDate() + '\n'
-                + "Количество элементов: " + arr.size();
+        lock.readLock().lock();
+        try {
+            return "type: Roue\n"
+                    + "Дата инициализации: " + arr.get(arr.stream().findFirst().get().getId()).getDate() + '\n'
+                    + "Количество элементов: " + arr.size();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public String show() throws NoSuchElementException {
-        StringBuilder s = new StringBuilder();
-        arr.forEach(route -> s.append(route.toString()).append("\n"));
-        return s.toString();
+        lock.readLock().lock();
+        try {
+            StringBuilder s = new StringBuilder();
+            arr.forEach(route -> s.append(route.toString()).append("\n"));
+            return s.toString();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public String add(Route newRoute) {
-        newRoute.setId(++countId);
-        arr.add(newRoute);
-        user.addId(newRoute.getId());
-        return "Your values saved";
-    }
-
-    public String update(Route newRoute,String arg) throws NumberFormatException{
-        int id = Integer.parseInt(arg);
-        for (int i = 0; i < arr.size(); ++i) {
-            if (arr.get(i).getId() == id){
-                arr.set(i, newRoute);
-            }
+        lock.writeLock().lock();
+        try {
+            newRoute.setId(++countId);
+            arr.add(newRoute);
+            user.addId(newRoute.getId());
+            return "Your values saved";
+        } finally {
+            lock.writeLock().unlock();
         }
-        return "Input your values";
     }
 
-    public String removeById(String arg) throws NumberFormatException{
-        int id = Integer.parseInt(arg);
-        //arr = arr.stream().filter(route -> route.getId() != id || !user.getName().equals(route.getUser())).collect(Collectors.toList());
-        for (int i = 0; i < arr.size(); ++i) {
-            if (arr.get(i).getId() == id){
-                if (user.getName().equals(arr.get(id).getUser())){
-                    arr.remove(i);
-                    user.removeId(id);
-                    return "Element is removed";
+    public String update(Route newRoute, String arg) throws NumberFormatException {
+        lock.writeLock().lock();
+        try {
+            int id = Integer.parseInt(arg);
+            for (int i = 0; i < arr.size(); ++i) {
+                if (arr.get(i).getId() == id) {
+                    arr.set(i, newRoute);
                 }
-                return "This element isn't belong to user";
             }
+            return "Input your values";
+        } finally {
+            lock.writeLock().unlock();
         }
-        return " No such element";
+    }
+
+    public String removeById(String arg) throws NumberFormatException {
+        lock.writeLock().lock();
+        try {
+            int id = Integer.parseInt(arg);
+            //arr = arr.stream().filter(route -> route.getId() != id || !user.getName().equals(route.getUser())).collect(Collectors.toList());
+            for (int i = 0; i < arr.size(); ++i) {
+                if (arr.get(i).getId() == id) {
+                    if (user.getName().equals(arr.get(id).getUser())) {
+                        arr.remove(i);
+                        user.removeId(id);
+                        return "Element is removed";
+                    }
+                    return "This element isn't belong to user";
+                }
+            }
+            return " No such element";
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public String clear() {
-        for (int i = arr.size(); i > 0; --i) {
-            if (user.getName().equals(arr.get(i).getUser())){
-                arr.remove(i);
-                user.removeId(arr.get(i).getId());
+        lock.writeLock().lock();
+        try {
+            for (int i = arr.size(); i > 0; --i) {
+                if (user.getName().equals(arr.get(i).getUser())) {
+                    arr.remove(i);
+                    user.removeId(arr.get(i).getId());
+                }
             }
+            return "List was cleared";
+        } finally {
+            lock.writeLock().unlock();
         }
-        return "List was cleared";
     }
 
     public String save() {
-
+        lock.readLock().lock();
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -164,19 +199,29 @@ public class MyCollection implements Serializable {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+        finally {
+        lock.readLock().unlock();
+        }
         return "Saved";
     }
 
     public String removeFirst() throws NumberFormatException {
+        lock.writeLock().lock();
+        try {
         if (!arr.get(0).getUser().equals(user.getName())){
             user.removeId(arr.get(0).getId());
             arr.remove(0);
             return "First element is removed";
         }
         return "First element isn't belong to user";
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public String removeGreater(String arg) throws NumberFormatException{
+        lock.writeLock().lock();
+        try {
         int id = Integer.parseInt(arg);
         arr = arr.stream().filter(route -> route.getId() < id ).collect(Collectors.toList());
         for (int i = arr.size()-1; i > -1; i--) {
@@ -186,10 +231,15 @@ public class MyCollection implements Serializable {
             }
         }
         return "Removed";
+    } finally {
+        lock.writeLock().unlock();
+    }
     }
 
 
     public String removeAllByDistance(String arg) throws NumberFormatException {
+        lock.writeLock().lock();
+        try {
         int distance = Integer.parseInt(arg);
         arr = arr.stream().filter(route -> route.getDistance() != distance).collect(Collectors.toList());
         for (int i = arr.size()-1; i > -1; i--) {
@@ -199,21 +249,36 @@ public class MyCollection implements Serializable {
             }
         }
         return "Removed";
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public String countLessThanDistance(String arg) throws NumberFormatException {
+        lock.readLock().lock();
+        try {
         int distance = Integer.parseInt(arg);
         return "Number of elements: " + arr.stream().filter(route -> route.getDistance() < distance).count();
+    } finally {
+        lock.readLock().unlock();
+    }
     }
 
     public String filterGreaterThanDistance(String arg) throws NumberFormatException, NoSuchElementException  {
+        lock.readLock().lock();
+        try {
         int distance = Integer.parseInt(arg);
         StringBuilder s = new StringBuilder();
         arr.stream().filter(route -> route.getDistance() > distance).forEach(route -> s.append(route.toString()).append("\n"));
         return s.toString();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public void getIds(User user){
+        lock.readLock().lock();
+        try {
         for (Route route: arr) {
             System.out.println(user.getName());
             System.out.println(route.getUser() + ' ' + user.getName());
@@ -222,6 +287,9 @@ public class MyCollection implements Serializable {
             }
         }
         System.out.println(user.getIds());
+    } finally {
+        lock.readLock().unlock();
+    }
     }
 
     public void setUser(User user) {

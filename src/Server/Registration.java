@@ -15,19 +15,17 @@ public class Registration {
         System.out.println("Testing connection to PostgreSQL JDBC");
         try {
             Class.forName("org.postgresql.Driver");
+            System.out.println("PostgreSQL JDBC Driver successfully connected");
         } catch (ClassNotFoundException e) {
             System.out.println("PostgreSQL JDBC Driver is not found. Include it in your library path ");
             e.printStackTrace();
         }
-
-        System.out.println("PostgreSQL JDBC Driver successfully connected");
         try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users (name, password) VALUES (?, ?)");
             Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
             while (resultSet.next()) {
                 if (user.getName().equals(resultSet.getString("name"))) {
-                    System.out.println("no");
                     user.setStatus(false);
                     success = false;
                 }
@@ -42,7 +40,7 @@ public class Registration {
             }
         }
         catch(SQLException e){
-            System.out.println("SQLExeption");
+            System.out.println("SQLExeption fix it");
             user.setStatus(false);
         }
     }

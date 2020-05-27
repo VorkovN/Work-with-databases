@@ -27,7 +27,6 @@ public class Authorization implements Serializable {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
             while (resultSet.next()){
                 if(user.getName().equals(resultSet.getString("name")) && user.getPassword().equals(resultSet.getString("password"))) {
-                    System.out.println("yes");
                     user.setStatus(true);
 
                 }
