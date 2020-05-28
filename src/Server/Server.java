@@ -26,15 +26,14 @@ public class Server implements Runnable {
     @Override
     public void run() {
         System.out.println("serv");
-        try (ObjectInputStream fromClient = new ObjectInputStream(socket.socket().getInputStream());
-              ObjectOutputStream toClient = new ObjectOutputStream(socket.socket().getOutputStream())){
+        try (ObjectInputStream fromClient = new ObjectInputStream(socket.socket().getInputStream())){
             System.out.println("read");
             Object obj = fromClient.readObject();//Вылетает тутЫS
             System.out.println("read2");
             if (obj instanceof Command) {
                 User user = (User) fromClient.readObject();
                 Command cmd = (Command) obj;
-                executeIt.execute(new MessageHandler(socket, myCollection, cmd, user, toClient));//
+                executeIt.execute(new MessageHandler(socket, myCollection, cmd, user));//
                 System.out.println("Connection accepted. com");//
             } else {
                 User user = (User) obj;

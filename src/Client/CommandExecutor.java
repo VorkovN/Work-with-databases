@@ -57,8 +57,7 @@ public class CommandExecutor {
 
     public void execute(String action) {
         try(Socket socket = new Socket(address, port);
-            ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream())) {
+            ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream())) {
             String[] actionParts = action.split(" ");
             if (action.isEmpty()) {
                 return;
@@ -81,8 +80,10 @@ public class CommandExecutor {
                         }
                         toServer.writeObject(command);
                         toServer.writeObject(user);
+                        ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
                         System.out.println(((MessageToServer) fromServer.readObject()).getStr());
                         user = (User) fromServer.readObject();
+                        fromServer.close();
                     }
                 } else {
                     System.out.println("Commands.Command doesn't exist");
@@ -95,6 +96,7 @@ public class CommandExecutor {
                         command.setArg(arg);
                         if (command instanceof ExecuteScriptCommand) {
                             toServer.close();
+                            ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
                             fromServer.close();
                             command.execute();
                         } else {
@@ -110,8 +112,10 @@ public class CommandExecutor {
                                     command.setNewRoute(newRoute);
                                     toServer.writeObject(command);
                                     toServer.writeObject(user);
+                                    ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
                                     System.out.println(((MessageToServer) fromServer.readObject()).getStr());
                                     user = (User) fromServer.readObject();
+                                    fromServer.close();
                                 }
                                 else{
                                     System.out.println("This element isn't belongs to you");
@@ -119,8 +123,10 @@ public class CommandExecutor {
                             }else{
                                 toServer.writeObject(command);
                                 toServer.writeObject(user);
+                                ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
                                 System.out.println(((MessageToServer) fromServer.readObject()).getStr());
                                 user = (User) fromServer.readObject();
+                                fromServer.close();
                             }
                         }
                     } else {
@@ -143,12 +149,13 @@ public class CommandExecutor {
     }
 
     public User registrationAuthorization(User user){
-        try(Socket socket = new Socket(address, port);
-            ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream())) {
+        try(Socket socket = new Socket(address, port)) {
             Thread.sleep(200);
+            ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
             toServer.writeObject(user);
+            ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
             user = (User)fromServer.readObject();
+            fromServer.close();
             System.out.println(user.getIds());
         }
         catch (IOException | ClassNotFoundException | InterruptedException e){

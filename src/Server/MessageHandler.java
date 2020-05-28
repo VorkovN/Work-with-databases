@@ -19,7 +19,7 @@ public class MessageHandler implements Runnable  {
     ObjectOutputStream toClient;
     static ExecutorService executeIt = Executors.newCachedThreadPool();
 
-    public MessageHandler(SocketChannel socket, MyCollection myCollection, Command command, User user, ObjectOutputStream toClient) {
+    public MessageHandler(SocketChannel socket, MyCollection myCollection, Command command, User user) {
         this.socket = socket;
         this.myCollection = myCollection;
         this.command = command;
@@ -50,12 +50,12 @@ public class MessageHandler implements Runnable  {
                 if (user.getStatus()) {
                     myCollection.getIds(user);
                 }
-                executeIt.execute(new Sender(socket, user, toClient));//
+                executeIt.execute(new Sender(socket, user));//
                 System.out.print("Sender aut.");//
             } else {
                 Registration registration = new Registration();
                 registration.toRegistration(user);
-                executeIt.execute(new Sender(socket, user, toClient));//
+                executeIt.execute(new Sender(socket, user));//
                 System.out.print("Sender reg.");//
             }
 
