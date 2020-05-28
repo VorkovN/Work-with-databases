@@ -146,11 +146,12 @@ public class CommandExecutor {
         try(Socket socket = new Socket(address, port);
             ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream())) {
+            Thread.sleep(200);
             toServer.writeObject(user);
             user = (User)fromServer.readObject();
             System.out.println(user.getIds());
         }
-        catch (IOException | ClassNotFoundException e){
+        catch (IOException | ClassNotFoundException | InterruptedException e){
             e.printStackTrace();
         }
         return user;

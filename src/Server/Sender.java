@@ -12,6 +12,7 @@ public class Sender implements Runnable {
     SocketChannel socket = null;
     MessageToServer msg = null;
     User user = null;
+    ObjectOutputStream toClient;
 
     public Sender(SocketChannel socket, MessageToServer msg, User user) {
         this.socket = socket;
@@ -19,24 +20,25 @@ public class Sender implements Runnable {
         this.user = user;
     }
 
-    public Sender(SocketChannel socket, User user) {
+    public Sender(SocketChannel socket, User user, ObjectOutputStream toClient) {
         this.socket = socket;
         this.user = user;
+        this.toClient = toClient;
     }
 
     @Override
     public void run() {
         System.out.println("send");
+        User u = new User("nik", "pas");
+        System.out.println(u.getName());
         try {
-            try(ObjectOutputStream toClient = new ObjectOutputStream(socket.socket().getOutputStream())){
                 if (msg != null){
                     toClient.writeObject(msg);
                     toClient.writeObject(user);
                 }
                 else{
-                    toClient.writeObject(user);
+                    toClient.writeObject(u);
                 }
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

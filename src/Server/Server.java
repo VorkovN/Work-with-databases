@@ -6,13 +6,16 @@ import Route.MyCollection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
 
-    SocketChannel socket;
-    MyCollection myCollection;
-    //static ExecutorService executeIt = Executors.newCachedThreadPool();
+    SocketChannel socket = null;
+    MyCollection myCollection = null;
+    static ExecutorService executeIt = Executors.newCachedThreadPool();
 
 
     public Server(SocketChannel socket, MyCollection myCollection) {
@@ -23,18 +26,18 @@ public class Server implements Runnable {
     @Override
     public void run() {
         System.out.println("serv");
-        try (ObjectInputStream fromClient = new ObjectInputStream(socket.socket().getInputStream())){
+        try (ObjectInputStream fromClient = new ObjectInputStream(socket.socket().getInputStream());
+              ObjectOutputStream toClient = new ObjectOutputStream(socket.socket().getOutputStream())){
             System.out.println("read");
             Object obj = fromClient.readObject();//Вылетает тутЫS
             System.out.println("read2");
             if (obj instanceof Command) {
                 User user = (User) fromClient.readObject();
                 Command cmd = (Command) obj;
-                //executeIt.execute(new MessageHandler(socket, myCollection, cmd, user));//
+                executeIt.execute(new MessageHandler(socket, myCollection, cmd, user, toClient));//
                 System.out.println("Connection accepted. com");//
             } else {
                 User user = (User) obj;
-                //executeIt.execute(new MessageHandler(socket, myCollection, user));//
                 System.out.println("Connection accepted. us");//
                 if (user.getAction().equals("authorization")) {
                     Authorization authorization = new Authorization();
@@ -46,8 +49,10 @@ public class Server implements Runnable {
                     Registration registration = new Registration();
                     registration.toRegistration(user);
                 }
+                executeIt.execute(new MessageHandler(socket, myCollection, user));//
             }
-        } catch (IOException | ClassNotFoundException e) {
+            Thread.sleep(1000);
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
             e.printStackTrace();
         }
         try {
@@ -55,5 +60,6 @@ public class Server implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }
