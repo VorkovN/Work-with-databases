@@ -19,7 +19,7 @@ public class MyCollection implements Serializable {
     private List<Route> arr = new ArrayList<Route>();
     ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
+    private static final String DB_URL = "jdbc:postgresql://pg/studs";
     private static final String USER = "s284775";
     private static final String PASS = "zrj839";
     private User user;
@@ -179,8 +179,10 @@ public class MyCollection implements Serializable {
             e.printStackTrace();
         }
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO routes (name, x, y, date, xl1, yl1, zl1, xl2, yl2, namel2, distance, client) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))
+        Statement statement = connection.createStatement();
+        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO routes (name, x, y, date, xl1, yl1, zl1, xl2, yl2, namel2, distance, client) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))
         {
+            statement.executeUpdate("TRUNCATE routes");
             for (Route route : arr) {
                 preparedStatement.setString(1, route.getName());
                 preparedStatement.setFloat(2, route.getX());
@@ -280,8 +282,6 @@ public class MyCollection implements Serializable {
         lock.readLock().lock();
         try {
         for (Route route: arr) {
-            System.out.println(user.getName());
-            System.out.println(route.getUser() + ' ' + user.getName());
             if (route.getUser().equals(user.getName())){
                 user.addId(route.getId());
             }

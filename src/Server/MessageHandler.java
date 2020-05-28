@@ -35,13 +35,11 @@ public class MessageHandler implements Runnable  {
 
     @Override
     public void run() {
-        System.out.println("mes");
         if (command != null) {
             command.setMyCollection(myCollection);
             myCollection.setUser(user);
             MessageToServer msg = command.execute();
             executeIt.execute(new Sender(socket, msg, user));//
-            System.out.print("Sender com.");//
         }
         else{
             if (user.getAction().equals("authorization")) {
@@ -51,12 +49,10 @@ public class MessageHandler implements Runnable  {
                     myCollection.getIds(user);
                 }
                 executeIt.execute(new Sender(socket, user));//
-                System.out.print("Sender aut.");//
             } else {
                 Registration registration = new Registration();
                 registration.toRegistration(user);
                 executeIt.execute(new Sender(socket, user));//
-                System.out.print("Sender reg.");//
             }
 
         }

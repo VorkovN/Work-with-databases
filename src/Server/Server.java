@@ -6,7 +6,6 @@ import Route.MyCollection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,11 +24,8 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("serv");
         try (ObjectInputStream fromClient = new ObjectInputStream(socket.socket().getInputStream())){
-            System.out.println("read");
             Object obj = fromClient.readObject();//Вылетает тутЫS
-            System.out.println("read2");
             if (obj instanceof Command) {
                 User user = (User) fromClient.readObject();
                 Command cmd = (Command) obj;

@@ -34,9 +34,6 @@ public class Sender implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("send");
-        User u = new User("nik", "pas");
-        System.out.println(u.getName());
         try {
                 if (msg != null){
                     toClient.writeObject(msg);
