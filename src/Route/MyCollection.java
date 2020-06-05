@@ -19,7 +19,7 @@ public class MyCollection implements Serializable {
     private List<Route> arr = new ArrayList<Route>();
     ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private static final String DB_URL = "jdbc:postgresql://pg/studs";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
     private static final String USER = "s284775";
     private static final String PASS = "zrj839";
     private User user;

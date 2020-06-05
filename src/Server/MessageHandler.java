@@ -5,7 +5,6 @@ import Commands.Command;
 import Msg.MessageToServer;
 import Route.MyCollection;
 
-import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +15,6 @@ public class MessageHandler implements Runnable  {
     MyCollection myCollection = null;
     Command command = null;
     User user = null;
-    ObjectOutputStream toClient;
     static ExecutorService executeIt = Executors.newCachedThreadPool();
 
     public MessageHandler(SocketChannel socket, MyCollection myCollection, Command command, User user) {
@@ -24,7 +22,6 @@ public class MessageHandler implements Runnable  {
         this.myCollection = myCollection;
         this.command = command;
         this.user = user;
-        this.toClient = toClient;
     }
 
     public MessageHandler(SocketChannel socket, MyCollection myCollection, User user) {
@@ -54,7 +51,6 @@ public class MessageHandler implements Runnable  {
                 registration.toRegistration(user);
                 executeIt.execute(new Sender(socket, user));//
             }
-
         }
     }
 }

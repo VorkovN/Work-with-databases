@@ -34,16 +34,6 @@ public class Server implements Runnable {
             } else {
                 User user = (User) obj;
                 System.out.println("Connection accepted. us");//
-                if (user.getAction().equals("authorization")) {
-                    Authorization authorization = new Authorization();
-                    authorization.exist(user);
-                    if (user.getStatus()) {
-                        myCollection.getIds(user);
-                    }
-                } else {
-                    Registration registration = new Registration();
-                    registration.toRegistration(user);
-                }
                 executeIt.execute(new MessageHandler(socket, myCollection, user));//
             }
             Thread.sleep(1000);

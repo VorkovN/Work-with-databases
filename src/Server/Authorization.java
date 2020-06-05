@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.sql.*;
 
 public class Authorization implements Serializable {
-    private static final String DB_URL = "jdbc:postgresql://pg/studs";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/studs";
     private static final String USER = "s284775";
     private static final String PASS = "zrj839";
 

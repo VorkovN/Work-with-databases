@@ -156,7 +156,6 @@ public class CommandExecutor {
             ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
             user = (User)fromServer.readObject();
             fromServer.close();
-            System.out.println(user.getIds());
         }
         catch (IOException | ClassNotFoundException | InterruptedException e){
             e.printStackTrace();
